@@ -1,0 +1,28 @@
+{
+  "name": "backbone-redux-migrator",
+  "version": "1.0.0",
+  "description": "Lets Backbone and Redux apps coexist, so you don't have to rewrite everything at once Edit",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo later"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/naugtur/backbone-redux-migrator.git"
+  },
+  "keywords": [
+    "backbone",
+    "redux",
+    "react",
+    "migration",
+    "bridge",
+    "model",
+    "store"
+  ],
+  "author": "naugtur <naugtur@gmail.com>",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/naugtur/backbone-redux-migrator/issues"
+  },
+  "homepage": "https://github.com/naugtur/backbone-redux-migrator#readme"
+}
