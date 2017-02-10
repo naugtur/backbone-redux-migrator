@@ -1,4 +1,6 @@
-import React, {Component, Children} from 'react'
+import React, {Component, Children, PropTypes} from 'react'
+import { connect } from 'react-redux';
+
 
 class Chooser extends Component {
   getChoice () {
@@ -35,4 +37,6 @@ Choice.propTypes = {
   name: PropTypes.string.isRequired
 }
 
-export {Chooser, Choice}
+const ConnectedChooser connect(store => ({ chosen: store.choice }))(Chooser)
+
+export {Chooser, ConnectedChooser, Choice}

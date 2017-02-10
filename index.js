@@ -1,6 +1,9 @@
 const CHOICE_ACTION = '@@BB_REDUX_MIGRATOR_CHOICE'
 
 function choiceReducer (state, action) {
+  if (typeof state === 'undefined') {
+    return ''
+  }
   if (action.type === CHOICE_ACTION) {
     return action.chosen
   } else {
@@ -14,7 +17,7 @@ function bbReduxMigratorInit (options, reduxAppMain) {
         : document.createElement('div'))
 
   const store = reduxAppMain(renderRoot, choiceReducer)
-  if(!store || typeof store.dispatch !== 'function'){
+  if (!store || typeof store.dispatch !== 'function') {
     throw Error(`Migrator couldn't access store. Please make sure you return store from your main redux setup function`)
   }
 

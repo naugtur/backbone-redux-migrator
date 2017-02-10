@@ -23,12 +23,18 @@ All features rewritten to redux, project is still alive, people stopped avoiding
 
 One more tip: You don't have to rewrite your whole single page app, just split it into more apps. People will accept a page load when going from main application to settings.
 
+## Installation
+```
+npm install backbone-redux-migrator
+```
+backbone-redux-migrator requires `react` and `react-redux` installed in the project. It's not listing them as dependencies in package.json, so you don't end up having duplicated dependencies when you use a different version of react or old version of `npm`.
+
 ## Usage
 
 In your main redux app entrypoint reduxMain.js
 ```js
 /* all the redux dependencies would also be here */
-import {Chooser,Choice} from "backbone-redux-migrator/Chooser"
+import {ConnectedChooser, Choice} from "backbone-redux-migrator/Chooser"
 import migrator from "backbone-redux-migrator"
 
 //I bet you have a nicer way to pass it to Backbone app, but I didn't want to add a build system in readme
@@ -42,14 +48,14 @@ window.Backbone.reduxApp = migrator({/*options*/}, function(renderRoot, choiceRe
 
   ReactDOM.render(
       <Provider store={ store }>
-          <Chooser>
+          <ConnectedChooser>
             <Choice name="home">
               <MyHomeComponent />
             </Choice>
             <Choice name="item">
               <MyItemComponent />
             </Choice>
-          </Chooser>
+          </ConnectedChooser>
       </Provider>,
       renderRoot
   );
@@ -57,7 +63,6 @@ window.Backbone.reduxApp = migrator({/*options*/}, function(renderRoot, choiceRe
   return store; //This is very important!
 })
 ```
-
 
 Now in Backbone/Marionette app just get a view and use it without a model
 ```js
@@ -71,12 +76,17 @@ The redux way - by setting it in store using an action.
 Backbone.reduxApp.dispatchAction({ type: SET_ITEM, item: itemId })
 ```
 
+### Chooser use pattern
+
+`ConnectedChooser` is using `connect` from `react-redux` to automatically retrieve the choice from your store. If you decide to use a different key in your store instead of `choice` you can import `Chooser` and wrap it in `connect` on your own. You can also use `Chooser` directly. It requires you to pass `chosen` property.
+
+
 ## QYMH
 Questions You Might Have
 
 ### Why not pass full routing path from Backbone to redux?
 
-That would require forcing consumers of this library to use react-router (or any other router, but not their choice). Letting Backbone app dispatch actions seems like a good replacement and is much more versatile. Any parametrized route can be a field in store instead.
+That would require forcing consumers of this library to use react-router (or any other router I integrate with, but not their choice). Letting Backbone app dispatch actions seems like a good replacement and is much more versatile. Any parametrized route can be a field in store instead.
 
 With the right reducers in place, one can even push content of a fetched model into the redux app to save some http requests using `dispatchAction`. But this is only recommended if you're in the process of rewriting multiple views to react+redux and some still need the model.
 
