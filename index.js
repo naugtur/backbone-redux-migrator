@@ -35,6 +35,27 @@ function bbReduxMigratorInit (options, reduxAppMain) {
           store.dispatch({type: CHOICE_ACTION, chosen: null})
         }
       })
+    },
+    getModelWithSync: function (fetcherFunction, constructorOverride) {
+      return (constructorOverride || options.modelsConstructor || Backbone.Model).extend({
+        sync: function (method, model, options) {
+          if (method === 'read') {
+            const state = fetcherFunction(store.getState())
+            options.success(state)
+          } else {
+            throw Error(`Can't run ${method} on a computed model of backbone-redux-migrator`)
+          }
+        }
+      })
+    },
+    getModelWithFetch: function (fetcherFunction, constructorOverride) {
+      return (constructorOverride || options.modelsConstructor || Backbone.Model).extend({
+        fetch: function (options) {
+          const state = fetcherFunction(store.getState())
+          if (!this.set(state, options)) { return false }
+          options && options.success && options.success(state)
+        }
+      })
     }
   }
 }
