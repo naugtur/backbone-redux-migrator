@@ -1,4 +1,6 @@
 # backbone-redux-migrator
+[![Build Status](https://travis-ci.org/naugtur/backbone-redux-migrator.svg?branch=master)](https://travis-ci.org/naugtur/backbone-redux-migrator)
+
 A tool for migrating from Backbone stack to react+redux without disturbing the project or putting it on hold for a rewrite.
 
 Lets Backbone and Redux apps coexist, so you can write new features in redux and continue with regular releases while a rewrite is progressing.
