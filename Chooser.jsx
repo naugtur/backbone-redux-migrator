@@ -37,6 +37,6 @@ Choice.propTypes = {
   name: PropTypes.string.isRequired
 }
 
-const ConnectedChooser connect(store => ({ chosen: store.choice }))(Chooser)
+const ConnectedChooser = connect(store => ({ chosen: store.choice }))(Chooser)
 
 export {Chooser, ConnectedChooser, Choice}
