@@ -27,7 +27,23 @@ One more tip: You don't have to rewrite your whole single page app, just split i
 ```
 npm install backbone-redux-migrator
 ```
+
 backbone-redux-migrator requires `react` and `react-redux` installed in the project. It's not listing them as dependencies in package.json, so you don't end up having duplicated dependencies when you use a different version of react or old version of `npm`.
+
+## API
+
+### Backbone side
+`require("backbone-redux-migrator")`: `migrator` factory function that wraps your redux app
+
+`migrator` instance API exposes functionalities to Backbone:
+- `getView` - returns a View class for displaying redux app within Backbone layout
+- `getViewMarionetteCompat` - returns a View class that uses Marionette's `onRender` and `onDestroy` instead of `render`
+- `getModelReadonly` - returns a Model class for reading store
+- `dispatchAction` - dispatches a redux action
+
+### Redux side
+
+"backbone-redux-migrator/Chooser" exports `Chooser`, `ConnectedChooser`, `Choice` components
 
 ## Usage
 
@@ -67,7 +83,8 @@ window.Backbone.reduxApp = migrator({/*options*/}, function(renderRoot, choiceRe
 Now in Backbone/Marionette app just get a view and use it without a model
 ```js
 var reduxHomeView = Backbone.reduxApp.getView("home")
-var reduxHomeViewMarionetteCompatible = Backbone.reduxApp.getView("home", Backbone.Marionette.ItemView)
+var reduxHomeView = Backbone.reduxApp.getViewMarionetteCompat("home", CustomView)
+var reduxHomeViewMarionetteCompatible = Backbone.reduxApp.getViewMarionetteCompat("home", Backbone.Marionette.ItemView)
 ```
 
 How do I render a parametrized item view if I can only choose components by name?
@@ -80,6 +97,21 @@ Backbone.reduxApp.dispatchAction({ type: SET_ITEM, item: itemId })
 
 `ConnectedChooser` is using `connect` from `react-redux` to automatically retrieve the choice from your store. If you decide to use a different key in your store instead of `choice` you can import `Chooser` and wrap it in `connect` on your own. You can also use `Chooser` directly. It requires you to pass `chosen` property.
 
+### Store based model
+
+*Readonly access to store form Backbone app*
+
+Sometimes, when you rewrite a functionality to redux side it turns out that something else depended on reading a field from your functionality's model. You can provide a model based on redux store contents, which will update from store on every `fetch()` call.
+
+The model calls `fetch()` in `initialize`, so it should be ready to use without calling `fetch()` manually.
+
+
+```js
+var HomeTilesModel = Backbone.reduxApp.getModelReadonly(function mapStateToModel(state){
+  return state.home.tiles
+})
+var customModel = Backbone.reduxApp.getModelReadonly(function mapStateToModel(state){ /* ... */ }, CustomModelClass)
+```
 
 ## QYMH
 Questions You Might Have
@@ -104,10 +136,23 @@ Also, backbone-redux-migrator is sooo much simpler.
 
 ### How do I communicate from redux to Backbone?
 
-`window.location` updates to change route. Hopefully you won't need anything else.
+`window.location` updates to change route.
+You can use store based model to get data that redux app fetched from the server.
+
+Hopefully you won't need anything else.
 
 I didn't find a way to communicate back that wouldn't introduce unwanted dependencies or "magic" into your nice new redux app. But if I figure it out, I'll let you know.
 
+
+### Why can't the store based model accept writes?
+
+It could, but the aim of this library is to help migrating away from old codebase, so all features here are focused on making sure redux app can be easily separated and doesn't depend on any behavior logic from Backbone side except routing.
+
+#### Are you aware that store based model + dispatchAction is enough to try to use redux from Backbone and only implement reducers?
+
+Yes, but if that was a good idea, I would have implemented it in the store based model.
+
+I'm sure if you try, it'll get ugly really fast. Please don't do it. :)
 
 ## Roadmap
 
@@ -115,4 +160,4 @@ I didn't find a way to communicate back that wouldn't introduce unwanted depende
 - add helpful warnings
 - add examples
 - write tests to encourage collaboration
-- add a way to communicate from redux to Backbone with which it's not easy to shoot yourself in a foot.
+- ~~add a way to communicate from redux to Backbone with which it's not easy to shoot yourself in a foot.~~ with store based model it should be enough.

@@ -26,7 +26,19 @@ function bbReduxMigratorInit (options, reduxAppMain) {
       store.dispatch(action)
     },
     getView: function (name, constructorOverride) {
-      return (constructorOverride || options.viewsConstructor || Backbone.View).extend({
+      const Parent = constructorOverride || options.viewsConstructor || Backbone.View
+      return Parent.extend({
+        render: function () {
+          Parent.prototype.render.call(this)
+          this.el.appendChild(renderRoot)
+          store.dispatch({type: CHOICE_ACTION, chosen: name})
+          return this
+        }
+      })
+    },
+    getViewMarionetteCompat: function (name, constructorOverride) {
+      const Parent = constructorOverride || options.viewsConstructor
+      return Parent.extend({
         onRender: function () {
           this.el.appendChild(renderRoot)
           store.dispatch({type: CHOICE_ACTION, chosen: name})
@@ -36,20 +48,15 @@ function bbReduxMigratorInit (options, reduxAppMain) {
         }
       })
     },
-    getModelWithSync: function (fetcherFunction, constructorOverride) {
-      return (constructorOverride || options.modelsConstructor || Backbone.Model).extend({
-        sync: function (method, model, options) {
-          if (method === 'read') {
-            const state = fetcherFunction(store.getState())
-            options.success(state)
-          } else {
-            throw Error(`Can't run ${method} on a computed model of backbone-redux-migrator`)
+    getModelReadonly: function (fetcherFunction, constructorOverride) {
+      const Parent = constructorOverride || options.modelsConstructor || Backbone.Model
+      return Parent.extend({
+        initialize: function () {
+          if (Parent.prototype.initialize) {
+            Parent.prototype.initialize.call(this)
           }
-        }
-      })
-    },
-    getModelWithFetch: function (fetcherFunction, constructorOverride) {
-      return (constructorOverride || options.modelsConstructor || Backbone.Model).extend({
+          this.fetch()
+        },
         fetch: function (options) {
           const state = fetcherFunction(store.getState())
           if (!this.set(state, options)) { return false }
