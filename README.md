@@ -162,8 +162,8 @@ I'm sure if you try, it'll get ugly really fast. Please don't do it. :)
 
 ## Roadmap
 
-- continue to look for ways to let redux app use a router of any kind
+- add a real migration example
 - add helpful warnings
-- add examples
-- write tests to encourage collaboration
+- continue to look for ways to let redux app use a router of any kind
+- ~~write tests to encourage collaboration~~
 - ~~add a way to communicate from redux to Backbone with which it's not easy to shoot yourself in a foot.~~ with store based model it should be enough.
