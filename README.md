@@ -41,7 +41,7 @@ backbone-redux-migrator requires `react` and `react-redux` installed in the proj
 
 `migrator` instance API exposes functionalities to Backbone:
 - `getView` - returns a View class for displaying redux app within Backbone layout
-- `getViewMarionetteCompat` - returns a View class that uses Marionette's `onRender` and `onDestroy` instead of `render`
+- `getViewMarionetteCompat` - returns a View class that uses Marionette's `onRender` and `onDestroy` instead of `render`. Use it only if getView breaks your complicated Marionette view logic.
 - `getModelReadonly` - returns a Model class for reading store
 - `dispatchAction` - dispatches a redux action
 
@@ -88,6 +88,8 @@ Now in Backbone/Marionette app just get a view and use it without a model
 ```js
 var reduxHomeView = Backbone.reduxApp.getView("home")
 var reduxHomeView = Backbone.reduxApp.getViewMarionetteCompat("home", CustomView)
+
+//IF inheriting from a complex Marionette view that didn't work for you with getView
 var reduxHomeViewMarionetteCompatible = Backbone.reduxApp.getViewMarionetteCompat("home", Backbone.Marionette.ItemView)
 ```
 
