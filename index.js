@@ -26,13 +26,41 @@ function bbReduxMigratorInit (options, reduxAppMain) {
       store.dispatch(action)
     },
     getView: function (name, constructorOverride) {
-      return (constructorOverride || options.viewsConstructor || Backbone.View).extend({
+      const Parent = constructorOverride || options.viewsConstructor || Backbone.View
+      return Parent.extend({
+        render: function () {
+          Parent.prototype.render.call(this)
+          this.el.appendChild(renderRoot)
+          store.dispatch({type: CHOICE_ACTION, chosen: name})
+          return this
+        }
+      })
+    },
+    getViewMarionetteCompat: function (name, constructorOverride) {
+      const Parent = constructorOverride || options.viewsConstructor
+      return Parent.extend({
         onRender: function () {
           this.el.appendChild(renderRoot)
           store.dispatch({type: CHOICE_ACTION, chosen: name})
         },
         onDestroy: function () {
           store.dispatch({type: CHOICE_ACTION, chosen: null})
+        }
+      })
+    },
+    getModelReadonly: function (fetcherFunction, constructorOverride) {
+      const Parent = constructorOverride || options.modelsConstructor || Backbone.Model
+      return Parent.extend({
+        initialize: function () {
+          if (Parent.prototype.initialize) {
+            Parent.prototype.initialize.call(this)
+          }
+          this.fetch()
+        },
+        fetch: function (options) {
+          const state = fetcherFunction(store.getState())
+          if (!this.set(state, options)) { return false }
+          options && options.success && options.success(state)
         }
       })
     }
