@@ -27,6 +27,7 @@ All features rewritten to redux, project is still alive, people stopped avoiding
 
 One more tip: You don't have to rewrite your whole single page app, just split it into more apps. People will accept a page load when going from main application to settings.
 
+
 ## Installation
 ```
 npm install backbone-redux-migrator
@@ -119,7 +120,17 @@ var HomeTilesModel = Backbone.reduxApp.getModelReadonly(function mapStateToModel
 var customModel = Backbone.reduxApp.getModelReadonly(function mapStateToModel(state){ /* ... */ }, CustomModelClass)
 ```
 
-## QYMH
+
+# Who took this migration path
+*Let me know if you're also migrating!*
+
+[![Egnyte Imc.](http://egnyte.com/assets/2015/images/logo.png)](https://egnyte.com/)
+
+
+
+----
+
+# QYMH
 Questions You Might Have
 
 ### Why not pass full routing path from Backbone to redux?
@@ -158,11 +169,11 @@ It could, but the aim of this library is to help migrating away from old codebas
 
 Yes, but if that was a good idea, I would have implemented it in the store based model.
 
-I'm sure if you try, it'll get ugly really fast. Please don't do it. :)
+I'm sure if you try, it can get ugly really fast. Please don't do it. :) Feel free to get in touch for suggestions on how to avoid this.
 
 ## Roadmap
 
-- add a real migration example
+- add a step-by-step migration example
 - add helpful warnings
 - continue to look for ways to let redux app use a router of any kind
 - ~~write tests to encourage collaboration~~
