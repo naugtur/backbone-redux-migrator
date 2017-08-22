@@ -1,12 +1,7 @@
 import jsdom from 'jsdom'
+const { window } = new jsdom.JSDOM(`<html></html>`);
 import Backbone from 'backbone'
-
-export default function pretendBrowser(done){
-  jsdom.env('<html></html>', (err, window) => {
-    global.window = window
-    global.document = window.document
-    global.Backbone = Backbone
-    global.window.Backbone = Backbone
-    done()
-  })
-}
+global.window = window
+global.document = window.document
+global.Backbone = Backbone
+global.window.Backbone = Backbone

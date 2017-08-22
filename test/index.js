@@ -1,5 +1,5 @@
 import migrator, {CHOICE_ACTION} from '../'
-import pretendBrowser from './helpers/pretendBrowser.js'
+import './helpers/pretendBrowser.js'
 import tinyStub from './helpers/tinyStub.js'
 import should from 'should'
 import Backbone from 'backbone'
@@ -12,7 +12,6 @@ Backbone.$ = Array // shortest jQuery replacement ever
 
 describe('migrator factory', () => {
   const fakeStore = {dispatch: () => {}} // store enough for me
-  before(pretendBrowser)
   it('should throw if callback doesnt return store', () => {
     should.throws(() => migrator({}, () => {
       return {}
