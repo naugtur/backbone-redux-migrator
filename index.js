@@ -2,49 +2,61 @@ const CHOICE_ACTION = '@@BB_REDUX_MIGRATOR_CHOICE'
 
 function choiceReducer (state, action) {
   if (typeof state === 'undefined') {
-    return ''
+    return {default: ''}
   }
   if (action.type === CHOICE_ACTION) {
-    return action.chosen
+    const route = action.chosen.split('/')
+    if (route.length === 1) {
+      return Object.assign({}, state, {
+        default: route[0]
+      })
+    } else {
+      return Object.assign({}, state, {
+        [route[0]]: route[1]
+      })
+    }
   } else {
     return state
   }
 }
 
-function bbReduxMigratorInit (options, reduxAppMain) {
-  const renderRoot = (options.renderRoot
-        ? options.renderRoot
-        : document.createElement('div'))
-
-  const store = reduxAppMain(renderRoot, choiceReducer)
+function bbReduxMigratorInit (options) {
+  const store = options.storeFactory(choiceReducer)
   if (!store || typeof store.dispatch !== 'function') {
-    throw Error(`Migrator couldn't access store. Please make sure you return store from your main redux setup function`)
+    throw Error(`Migrator couldn't access store. Please make sure you return store from your storeFactory function`)
   }
+  const roots = Object.keys(options.renderers).reduce((roots, renderer) => {
+    const root = document.createElement('div')
+    roots[renderer] = options.renderers[renderer](store, root)
+    return roots
+  }, {})
 
   return {
     dispatchAction: function (action) {
       store.dispatch(action)
     },
-    getView: function (name, constructorOverride) {
+    getView: function ({choice, renderer, constructorOverride}) {
+      renderer = renderer || 'default'
       const Parent = constructorOverride || options.viewsConstructor || Backbone.View
       return Parent.extend({
         render: function () {
           Parent.prototype.render.call(this)
-          this.el.appendChild(renderRoot)
-          store.dispatch({type: CHOICE_ACTION, chosen: name})
+          this.el.appendChild(roots[renderer])
+          store.dispatch({type: CHOICE_ACTION, chosen: {[renderer]: choice}})
           return this
         }
       })
     },
-    getViewMarionetteCompat: function (name, constructorOverride) {
+    getViewMarionetteCompat: function ({choice, renderer, constructorOverride}) {
+      renderer = renderer || 'default'
       const Parent = constructorOverride || options.viewsConstructor
       return Parent.extend({
         onRender: function () {
-          this.el.appendChild(renderRoot)
-          store.dispatch({type: CHOICE_ACTION, chosen: name})
+          this.el.appendChild(roots[renderer])
+          store.dispatch({type: CHOICE_ACTION, chosen: {[renderer]: choice}})
         },
         onDestroy: function () {
-          store.dispatch({type: CHOICE_ACTION, chosen: null})
+          store.dispatch({type: CHOICE_ACTION, chosen: {[renderer]: null}})
         }
       })
     },
