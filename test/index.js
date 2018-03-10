@@ -9,28 +9,51 @@ import Backbone from 'backbone'
 // The only required part of the API is $(DOMElement)[0] === DOMElement
 Backbone.$ = Array // shortest jQuery replacement ever
 
-
 describe('migrator factory', () => {
   const fakeStore = {dispatch: () => {}} // store enough for me
-  it('should throw if callback doesnt return store', () => {
-    should.throws(() => migrator({}, () => {
-      return {}
-    }))
+  it('should throw if default renderer is missing', () => {
+    should.throws(() => migrator({
+      renderers: { },
+      storeFactory: () => {
+        return {}
+      }}))
   })
-  it('should call the callback with expected input', () => {
-    migrator({}, (renderRoot, choiceReducer) => {
-      renderRoot.should.have.property('nodeName', 'DIV')
-      choiceReducer.should.be.type('function')
-      return fakeStore
+  it('should throw if storeFactory doesnt return store', () => {
+    should.throws(() => migrator({
+      renderers: {
+        default: i => i
+      },
+      storeFactory: () => {
+        return {}
+      }}))
+  })
+  it('should call the callbacks with expected input', () => {
+    migrator({
+      storeFactory: (choiceReducer) => {
+        choiceReducer.should.be.type('function')
+        return fakeStore
+      },
+      renderers: {
+        default: (store, renderRoot) => {
+          store.should.equal(fakeStore)
+          renderRoot.should.have.property('nodeName', 'DIV')
+        }
+      }
     })
   })
   it('should pass a correct choiceReducer to the callback', () => {
-    migrator({}, (renderRoot, choiceReducer) => {
-      choiceReducer(undefined, {type: 'whatever'}).should.eql('')
-      choiceReducer('', {type: CHOICE_ACTION, chosen: 'foo'}).should.eql('foo')
-      choiceReducer('bar', {type: CHOICE_ACTION, chosen: 'foo'}).should.eql('foo')
-      choiceReducer('foo', {type: 'some other action', chosen: 'foo'}).should.eql('foo')
-      return fakeStore
+    migrator({
+      renderers: {
+        default: i => i
+      },
+      storeFactory: (choiceReducer) => {
+        choiceReducer(undefined, {type: 'whatever'}).should.eql({default: ''})
+        choiceReducer('', {type: CHOICE_ACTION, chosen: 'foo'}).should.eql({default: 'foo'})
+        choiceReducer({default: 'bar'}, {type: CHOICE_ACTION, chosen: 'default/foo'}).should.eql({default: 'foo'})
+        choiceReducer({default: 'foo'}, {type: 'some other action', chosen: 'invalid'}).should.eql({default: 'foo'})
+        choiceReducer({default: 'bar'}, {type: CHOICE_ACTION, chosen: 'other/foo'}).should.eql({default: 'bar', other: 'foo'})
+        return fakeStore
+      }
     })
   })
 
@@ -47,32 +70,39 @@ describe('migrator factory', () => {
       dispatchStub = tinyStub()
       getStateStub = tinyStub(_ => ({'key': 'value'}))
       appendChildStub = tinyStub()
-      api = migrator({}, (_renderRoot) => {
-        renderRoot = _renderRoot
-        return {
-          dispatch: dispatchStub,
-          getState: getStateStub
+      api = migrator({
+        storeFactory: (choiceReducer) => {
+          return {
+            dispatch: dispatchStub,
+            getState: getStateStub
+          }
+        },
+        renderers: {
+          default: (store, _renderRoot) => {
+            renderRoot = _renderRoot
+          }
         }
-      })
+      }
+      )
       mockDomNode = global.document.createElement('div')
       mockDomNode.appendChild = appendChildStub
     })
 
     it('should create view class which renders by appending renderRoot to its el', () => {
-      const View = api.getView('test', Backbone.View)
+      const View = api.getView({choice:'test', constructorOverride: Backbone.View})
       const view = new View({el: mockDomNode})
       view.render()
       dispatchStub.calls.length.should.eql(1, 'expected dispatch called once')
       appendChildStub.calls.length.should.eql(1, 'expected appendChild called once')
       dispatchStub.calls[0][0].should.have.property('type', CHOICE_ACTION)
-      dispatchStub.calls[0][0].should.have.property('chosen', 'test')
+      dispatchStub.calls[0][0].should.have.property('chosen', {default: 'test'})
       appendChildStub.calls[0][0].should.eql(renderRoot)
     })
     it('should call render from super', () => {
       const superRenderStub = tinyStub()
-      const View = api.getView('test', Backbone.View.extend({
+      const View = api.getView({choice:'test', constructorOverride: Backbone.View.extend({
         render: superRenderStub
-      }))
+      })})
       const view = new View({el: mockDomNode})
       view.render()
       superRenderStub.calls.length.should.eql(1, 'expected super render called once')
@@ -81,11 +111,11 @@ describe('migrator factory', () => {
       appendChildStub.calls[0][0].should.eql(renderRoot)
     })
     it('should support Marionette event based render flow', () => {
-      const View = api.getViewMarionetteCompat('test', Backbone.View.extend({
-        render: function(){
+      const View = api.getViewMarionetteCompat({choice:'test', constructorOverride: Backbone.View.extend({
+        render: function () {
           this.onRender()
         }
-      }))
+      })})
       const view = new View({el: mockDomNode})
       view.render()
       dispatchStub.calls.length.should.eql(1, 'expected dispatch called once')

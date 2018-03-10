@@ -21,13 +21,17 @@ function choiceReducer (state, action) {
 }
 
 function bbReduxMigratorInit (options) {
+  if (!options.renderers || typeof options.renderers.default !== 'function') {
+    throw Error(`renderers.default must be a function. At lest the default renderer is required.`)
+  }
   const store = options.storeFactory(choiceReducer)
   if (!store || typeof store.dispatch !== 'function') {
     throw Error(`Migrator couldn't access store. Please make sure you return store from your storeFactory function`)
   }
   const roots = Object.keys(options.renderers).reduce((roots, renderer) => {
     const root = document.createElement('div')
-    roots[renderer] = options.renderers[renderer](store, root)
+    roots[renderer] = root
+    options.renderers[renderer](store, root)
     return roots
   }, {})
 
