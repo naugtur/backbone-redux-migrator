@@ -95,7 +95,7 @@ describe('migrator factory', () => {
       dispatchStub.calls.length.should.eql(1, 'expected dispatch called once')
       appendChildStub.calls.length.should.eql(1, 'expected appendChild called once')
       dispatchStub.calls[0][0].should.have.property('type', CHOICE_ACTION)
-      dispatchStub.calls[0][0].should.have.property('chosen', {default: 'test'})
+      dispatchStub.calls[0][0].should.have.property('chosen', 'default/test')
       appendChildStub.calls[0][0].should.eql(renderRoot)
     })
     it('should call render from super', () => {

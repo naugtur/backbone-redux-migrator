@@ -46,7 +46,7 @@ function bbReduxMigratorInit (options) {
         render: function () {
           Parent.prototype.render.call(this)
           this.el.appendChild(roots[renderer])
-          store.dispatch({type: CHOICE_ACTION, chosen: {[renderer]: choice}})
+          store.dispatch({type: CHOICE_ACTION, chosen: renderer +'/'+ choice})
           return this
         }
       })
@@ -57,10 +57,10 @@ function bbReduxMigratorInit (options) {
       return Parent.extend({
         onRender: function () {
           this.el.appendChild(roots[renderer])
-          store.dispatch({type: CHOICE_ACTION, chosen: {[renderer]: choice}})
+          store.dispatch({type: CHOICE_ACTION, chosen: renderer +'/'+ choice})
         },
         onDestroy: function () {
-          store.dispatch({type: CHOICE_ACTION, chosen: {[renderer]: null}})
+          store.dispatch({type: CHOICE_ACTION, chosen: 'default/'})
         }
       })
     },
