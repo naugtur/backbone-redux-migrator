@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 
 
 function routeMatches(choice, name){
-  const bits = name.split('/')
+  const route = name.split('/')
   if (route.length===1){
     return choice.default === name
   } else {
