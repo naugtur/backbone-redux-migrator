@@ -36,7 +36,7 @@ function bbReduxMigratorInit (options) {
   }, {})
 
   return {
-    debugRenderTo: ({choice, renderer, targetNode}) {
+    debugRenderTo: function ({choice, renderer, targetNode}) {
       renderer = renderer || 'default'
       targetNode.appendChild(roots[renderer])
       store.dispatch({type: CHOICE_ACTION, chosen: renderer +'/'+ choice})
