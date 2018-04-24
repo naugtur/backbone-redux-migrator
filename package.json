@@ -1,6 +1,6 @@
 {
   "name": "backbone-redux-migrator",
-  "version": "1.1.0-2",
+  "version": "1.1.0-3",
   "description": "Lets Backbone and Redux apps coexist, so you don't have to rewrite everything at once Edit",
   "main": "index.js",
   "scripts": {
