@@ -31,7 +31,7 @@
     "babel-preset-react": "^6.24.1",
     "backbone": "^1.3.3",
     "jsdom": "^13.1.0",
-    "mocha": "^5.0.1",
+    "mocha": "^6.0.0",
     "should": "^13.0.1"
   }
 }
