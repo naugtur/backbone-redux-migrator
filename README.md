@@ -50,6 +50,13 @@ backbone-redux-migrator requires `react` and `react-redux` installed in the proj
 
 "backbone-redux-migrator/Chooser" exports `Chooser`, `ConnectedChooser`, `Choice` components
 
+`storeFactory` is a function where you build and configure the store, compose reducers and return the store reference.
+
+`renderers` is a collection of `ReactDOM.render` segments. `default` is mandatory, but in case you need to display parts of your Redux app in multiple regions of the Backbone app at once, you can have multiple renderers connected to one store.
+The recommended way to go is to try to minimize the number of renderers you have (they are never destroyed, so they are not meant to be used and recycled)
+
+
+
 ## Usage
 
 In your main redux app entrypoint reduxMain.js
@@ -59,39 +66,57 @@ import {ConnectedChooser, Choice} from "backbone-redux-migrator/Chooser"
 import migrator from "backbone-redux-migrator"
 
 //I bet you have a nicer way to pass it to Backbone app, but I didn't want to add a build system in readme
-window.Backbone.reduxApp = migrator({/*options*/}, function(renderRoot, choiceReducer){
+window.Backbone.reduxApp = migrator({
+  storeFactory: function(choiceReducer) {
 
-  const createStoreWithMiddleware = applyMiddleware(...middleware)(createStore);
-  store = createStoreWithMiddleware(combineReducers({
-      /* your reducers here */
-      choice: choiceReducer
-  }));
+    const createStoreWithMiddleware = applyMiddleware(...middleware)(createStore);
+    store = createStoreWithMiddleware(combineReducers({
+        /* your reducers here */
+        choice: choiceReducer
+    }));
+    return store; //This is very important!
+  },
+  renderers:{
+    default: function(store, renderRoot){
+        ReactDOM.render(
+            <Provider store={ store }>
+                <ConnectedChooser>
+                  <Choice name="default/home">
+                    <MyHomeComponent />
+                  </Choice>
+                  <Choice name="default/item">
+                    <MyItemComponent />
+                  </Choice>
+                </ConnectedChooser>
+            </Provider>,
+            renderRoot
+        );
+    },
+    itemPreview: function(store, renderRoot){
+        ReactDOM.render(
+            <Provider store={ store }>
+                <ConnectedChooser>
+                  <Choice name="itemPreview/item">
+                    <MyItemComponent />
+                  </Choice>
+                </ConnectedChooser>
+            </Provider>,
+            renderRoot
+        );
+    }
+  }
 
-  ReactDOM.render(
-      <Provider store={ store }>
-          <ConnectedChooser>
-            <Choice name="home">
-              <MyHomeComponent />
-            </Choice>
-            <Choice name="item">
-              <MyItemComponent />
-            </Choice>
-          </ConnectedChooser>
-      </Provider>,
-      renderRoot
-  );
 
-  return store; //This is very important!
 })
 ```
 
 Now in Backbone/Marionette app just get a view and use it without a model
 ```js
-var reduxHomeView = Backbone.reduxApp.getView("home")
-var reduxHomeView = Backbone.reduxApp.getViewMarionetteCompat("home", CustomView)
+var reduxHomeView = Backbone.reduxApp.getView({choice:"home"})
+var reduxHomeView = Backbone.reduxApp.getViewMarionetteCompat({ choice: "home", constructorOverride: CustomView })
 
 //IF inheriting from a complex Marionette view that didn't work for you with getView
-var reduxHomeViewMarionetteCompatible = Backbone.reduxApp.getViewMarionetteCompat("home", Backbone.Marionette.ItemView)
+var reduxHomeViewMarionetteCompatible = Backbone.reduxApp.getViewMarionetteCompat({ choice: "home",  constructorOverride:  Backbone.Marionette.ItemView })
 ```
 
 How do I render a parametrized item view if I can only choose components by name?
